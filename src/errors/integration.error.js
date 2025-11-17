@@ -6,7 +6,7 @@ export class IntegrationError extends CustomError {
             `Error al integrar con ${provider}.`,
             502,
             details,
-            `https://konvex.com/errors/integration/${provider.toLowerCase()}`
+            `https://mordcai.com/errors/integration/${provider.toLowerCase()}`
         );
     }
 }
