@@ -60,7 +60,7 @@ export const loadExpress = (app) => {
 
   // 404 handler
   app.use((req, res) => {
-    res.notFound('Ruta no encontrada');
+    res.notFound('Route not found');
   });
 
   // Error handler (debe ir al final)
