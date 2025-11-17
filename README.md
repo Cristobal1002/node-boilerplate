@@ -1,4 +1,4 @@
-# Konvex Ecommerce API
+# Node - Sequelize boilerplate 
 
 Backend de consumo para integración Siigo y comercios electrónicos.
 
