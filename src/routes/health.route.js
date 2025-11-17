@@ -1,24 +1,62 @@
-import express from "express";
-import {ForbiddenError, IntegrationError, NotFoundError} from "../errors/index.js";
+import express from 'express';
+import { sequelize } from '../config/database.js';
+import { logger } from '../utils/logger.js';
+import { config } from '../config/index.js';
 
-export const health = express.Router()
+export const health = express.Router();
 
-health.get('/', async (req, res, next) => {
-    res.json('OK')
-} )
+// Health check básico
+health.get('/', async (req, res) => {
+  res.ok({ status: 'OK', timestamp: new Date().toISOString() });
+});
 
-health.get('/not-found', async () =>{
-    throw new NotFoundError("Property");
-})
+// Readiness probe (verifica DB)
+health.get('/ready', async (req, res) => {
+  try {
+    await sequelize.authenticate();
+    res.ok({
+      status: 'ready',
+      database: 'connected',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error({ error }, 'Health check failed');
+    res.status(503).json({
+      success: false,
+      status: 'not ready',
+      database: 'disconnected',
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
 
-health.get('/forbidden', async () =>{
-    throw new ForbiddenError("Acceso denegado a recurso");
-})
+// Liveness probe
+health.get('/live', async (req, res) => {
+  res.ok({
+    status: 'alive',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
 
-health.get('/integration', async () =>{
-    throw new IntegrationError("Shopify", { detail: "Invalid credentials" });
-})
+// Endpoints de prueba de errores (solo en desarrollo)
+if (config.app.nodeEnv === 'development') {
+  health.get('/not-found', async () => {
+    const { NotFoundError } = await import('../errors/index.js');
+    throw new NotFoundError('Property');
+  });
 
-health.get('/boom', async () =>{
-    throw new Error("Explosión interna 😅");
-})
+  health.get('/forbidden', async () => {
+    const { ForbiddenError } = await import('../errors/index.js');
+    throw new ForbiddenError('Access denied to resource');
+  });
+
+  health.get('/integration', async () => {
+    const { IntegrationError } = await import('../errors/index.js');
+    throw new IntegrationError('Shopify', { credentials: 'Invalid credentials' });
+  });
+
+  health.get('/boom', async () => {
+    throw new Error('Internal explosion');
+  });
+}

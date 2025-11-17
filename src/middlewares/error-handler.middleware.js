@@ -1,19 +1,42 @@
-import {CustomError} from "../errors/index.js";
-export const errorHandler = (err, req, res, next) => {
-    console.error("Error capturado:", err);
+import { CustomError } from '../errors/index.js';
+import { logger } from '../utils/logger.js';
+import { config } from '../config/index.js';
 
-    if (err instanceof CustomError) {
-        const serialized = err.serialize();
-        return res.status(err.statusCode).json(serialized);
-    }
+export const errorHandler = (err, req, res, _next) => {
+  // Log del error
+  logger.error(
+    {
+      error: {
+        name: err.name,
+        message: err.message,
+        stack: err.stack,
+      },
+      request: {
+        method: req.method,
+        url: req.url,
+        ip: req.ip,
+        body: req.body,
+      },
+    },
+    'Error capturado'
+  );
 
-    return res.status(500).json({
-        type: "about:blank",
-        title: "Error interno del servidor",
-        status: 500,
-        details: {
-            message: err.message,
-            stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
-        }
-    });
+  if (err instanceof CustomError) {
+    const serialized = err.serialize();
+    return res.status(err.statusCode).json(serialized);
+  }
+
+  // Error no manejado
+  return res.status(500).json({
+    type: 'about:blank',
+    title: 'Internal server error',
+    status: 500,
+    details: {
+      message:
+        config.app.nodeEnv === 'development'
+          ? err.message
+          : 'An internal server error occurred',
+      ...(config.app.nodeEnv === 'development' && { stack: err.stack }),
+    },
+  });
 };
