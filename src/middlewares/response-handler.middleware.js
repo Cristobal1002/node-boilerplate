@@ -1,5 +1,5 @@
 export const responseHandler = (req, res, next) => {
-    res.ok = (data = null, message = 'Operación exitosa') => {
+    res.ok = (data = null, message = 'Success operation') => {
         res.status(200).json({
             success: true,
             message,
@@ -7,7 +7,7 @@ export const responseHandler = (req, res, next) => {
         });
     };
 
-    res.created = (data = null, message = 'Recurso creado') => {
+    res.created = (data = null, message = 'Resource created') => {
         res.status(201).json({
             success: true,
             message,
@@ -15,7 +15,7 @@ export const responseHandler = (req, res, next) => {
         });
     };
 
-    res.badRequest = (message = 'Petición incorrecta', data = null) => {
+    res.badRequest = (message = 'Bad request', data = null) => {
         res.status(400).json({
             success: false,
             message,
@@ -23,28 +23,28 @@ export const responseHandler = (req, res, next) => {
         });
     };
 
-    res.unauthorized = (message = 'No autorizado') => {
+    res.unauthorized = (message = 'Unauthorized') => {
         res.status(401).json({
             success: false,
             message,
         });
     };
 
-    res.forbidden = (message = 'Acceso denegado') => {
+    res.forbidden = (message = 'Access denied') => {
         res.status(403).json({
             success: false,
             message,
         });
     };
 
-    res.notFound = (message = 'No encontrado') => {
+    res.notFound = (message = 'Not found') => {
         res.status(404).json({
             success: false,
             message,
         });
     };
 
-    res.serverError = (message = 'Error interno del servidor', data = null) => {
+    res.serverError = (message = 'Internal server error', data = null) => {
         res.status(500).json({
             success: false,
             message,
